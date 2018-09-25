@@ -20,7 +20,7 @@ Information from -> https://tutorials-raspberrypi.de/raspberry-pi-luftfeuchtigke
 Autor   : Christian Dopatka
 Version : 29.05.2017
 Version : 24.09.2018    - Druckluftsensor (BMP085) entfernt
-                        - Speichern in eine Datenbank hinzugefügt [UNGETESTET]
+                        - Speichern in eine Datenbank hinzugefügt
 
 
 
@@ -36,30 +36,30 @@ import sqlite3
 
 ## Der Sensor:
 _am2302 = Adafruit_DHT.AM2302
-pin = 17
+pin = 4
 
 # Für die Plausibilitätsprüfung
-_oldTemperature
-_oldHumidity
+(_oldHumidity, _oldTemperature) = Adafruit_DHT.read_retry(_am2302, pin)
 
 def measure():
     (humidity, temperature) = Adafruit_DHT.read_retry(_am2302, pin)
-    return(temperature, humidity)
+    return(temperature, humidity) =
 
 def averageMinute():
     temperatureList                         = []
     humidityList                            = []
-    pressureList                            = []
     minOld                                  = time.strftime("%M")
     minNew                                  = time.strftime("%M")
     while minOld == minNew:
+        global _temperature
+        global _humidity
         (temperature, humidity)   = measure()
         if temperature is not None and plausibilityTest(_oldTemperature, temperature) == True:
             temperatureList.extend([temperature])
-            global _oldTemperature = temperature
+            _oldTemperature = temperature
         if humidity is not None and plausibilityTest(_oldHumidity, humidity) == True:
             humidityList.extend([humidity])
-            global _oldHumidity = humidity
+            _oldHumidity = humidity
         time.sleep(5)
         minNew                      = time.strftime("%M")
     temperature                     = sum(temperatureList)/len(temperatureList)
@@ -79,14 +79,12 @@ def plausibilityTest(valueOld, valueNew):
 
 def connectToDataBase():
 
-    # UNGETESTET
-
     conn = sqlite3.connect("temp.db")
     cursor = conn.cursor()
 
     # Create table
     sql = '''CREATE TABLE IF NOT EXISTS temperature
-                 (temp REAL, humm REAL datetime TIME)'''
+                 (temp REAL, hum REAL datetime DATETIME)'''
     cursor.execute(sql)
 
     # Save (commit) the changes
@@ -95,8 +93,6 @@ def connectToDataBase():
     return (conn)
 
 def writeDataIntoDataBase(conn ,temperature, humidity):
-
-    # UNGETESTET
 
     cursor = conn.cursor()
     dateTime = time.strftime("YYYY-MM-DD HH:MM:SS.SSS")
@@ -135,18 +131,11 @@ try:
         writeDataIntoDataBase(conn, temperature, humidity)
 
         # Save into CSV-Files
-        FileTemperature = '/home/cris/Dokumente/Wetterstation/ \
-        Messdaten/temperature/' + Date + '.csv'
-        FileHumidity = '/home/cris/Dokumente/Wetterstation/ \
-        Messdaten/humidity/' + Date + '.csv'
+        File = '/home/cris/Dokumente/' + Date + '.csv'
         # In die CSV-Dateien schreiben
-        with open(FileTemperature,'a') as out:
+        with open(File,'a') as out:
             file    = csv.writer(out, delimiter=';', lineterminator='\n')
-            file.writerow([temperature,Houre,Minute,Day,Mounth,Year])
-        out.close()
-        with open(FileHumidity,'a') as out:
-            file    = csv.writer(out, delimiter=';', lineterminator='\n')
-            file.writerow([humidity,Houre,Minute,Day,Mounth,Year])
+            file.writerow([temperature,humidity,Hour,Minute,Day,Mounth,Year])
         out.close()
 
 # Do by Error or by clothing Script
