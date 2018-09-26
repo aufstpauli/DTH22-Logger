@@ -51,9 +51,9 @@ _oldTemperature = 0.0
 print("initlize....")
 for x in range(5):
     (hum, temp) = Adafruit_DHT.read_retry(_am2302, pin)
-    _oldHumidity    += hum
-    _oldTemperature += temp
-    sleep(5)
+    _oldHumidity    += round(hum,1)
+    _oldTemperature += round(temp,1)
+    time.sleep(5)
 _oldHumidity    = _oldHumidity / 5
 _oldTemperature = _oldTemperature / 5
 print("initlize....done")
@@ -87,7 +87,9 @@ def averageMinute():
     while minOld == minNew:
         global _oldTemperature
         global _oldHumidity
-        (temperature, humidity)   = measure()
+        (temperature, (humidity)   = measure()
+        temperature = round(temperature,1)
+        humidity    = round(humidity,1)
         if temperature is not None and plausibilityTest(_oldTemperature, temperature) == True:
             temperatureList.extend([temperature])
             _oldTemperature = temperature
