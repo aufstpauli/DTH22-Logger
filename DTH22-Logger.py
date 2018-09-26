@@ -84,6 +84,7 @@ def averageMinute():
         minNew                      = time.strftime("%M")
     temperature                     = sum(temperatureList)/len(temperatureList)
     humidity                        = sum(humidityList)/len(humidityList)
+    print(str(temperature)+"°C\t\t"+str(humidity)+"%")
 
     return (temperature, humidity)
 
@@ -108,6 +109,7 @@ def connectToDataBase():
 
     conn = sqlite3.connect("temp.db")
     cursor = conn.cursor()
+    print("connected to databse: temp.db")
 
     # Create table
     sql = '''CREATE TABLE IF NOT EXISTS temperature
@@ -164,6 +166,7 @@ try:
 
         # Save into the Database
         writeDataIntoDataBase(conn, temperature, humidity)
+        print("Save into the database")
 
         # Save into CSV-Files
         File = '/home/cris/Documents/' + Date + '.csv'
@@ -171,6 +174,7 @@ try:
             file    = csv.writer(out, delimiter=';', lineterminator='\n')
             file.writerow([temperature,humidity,Hour,Minute,Day,Mounth,Year])
         out.close()
+        print("Save into CSV-Files in: /home/cris/Documents/")
 
 # Do by Error or by clothing Script
 finally:
