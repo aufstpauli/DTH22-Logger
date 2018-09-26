@@ -2,16 +2,16 @@
 # DTH22-Logger.py
 
 '''
-Vorbereitung:
+Preparation:
 AM2302:
-sudo apt-get update
-sudo apt-get install build-essential python-dev python-openssl git
-git clone https://github.com/adafruit/Adafruit_Python_DHT.git
-cd Adafruit_Python_DHT
-sudo python3 setup.py install
+...$ sudo apt-get update
+...$ sudo apt-get install build-essential python-dev python-openssl git
+...$ git clone https://github.com/adafruit/Adafruit_Python_DHT.git
+...$ cd Adafruit_Python_DHT
+...$ sudo python3 setup.py install
 
 or install with pip
-sudo pip3 install Adafruit_DHT
+...$ sudo pip3 install Adafruit_DHT
 
 Information from -> https://tutorials-raspberrypi.de/raspberry-pi-luftfeuchtigkeit ->
 -temperatur-messen-dht11-dht22/
@@ -21,6 +21,9 @@ Autor   : Christian Dopatka
 Version : 29.05.2017
 Version : 24.09.2018    - Druckluftsensor (BMP085) entfernt
                         - Speichern in eine Datenbank hinzugefügt
+Version : 26.09.2018    - Syntaxfehler beseitigt
+                        - Code Zusammengefasst
+                        - Kommentare hinzugefügt
 
 
 
@@ -34,25 +37,41 @@ import time
 import Adafruit_DHT
 import sqlite3
 
-## Der Sensor:
+## The Sensor:
 _am2302 = Adafruit_DHT.AM2302
-pin = 4
+pin = 4     # Pin on RsPi
 
-# Für die Plausibilitätsprüfung
+# For checking plausibility
 (_oldHumidity, _oldTemperature) = Adafruit_DHT.read_retry(_am2302, pin)
 
+'''
+For easy handling to measure
+
+return temperature, humidity
+
+require temperature     != NULL
+require humidity        != NULL
+'''
 def measure():
     (humidity, temperature) = Adafruit_DHT.read_retry(_am2302, pin)
-    return(temperature, humidity) =
+    return(temperature, humidity)
 
+'''
+Measuring all 5 seconds the temperature and the humidity. At beginning a new minute returns the average value. 
+
+return temperature, humidity
+
+require temperature     != NULL
+require humidity        != Null
+'''
 def averageMinute():
     temperatureList                         = []
     humidityList                            = []
     minOld                                  = time.strftime("%M")
     minNew                                  = time.strftime("%M")
     while minOld == minNew:
-        global _temperature
-        global _humidity
+        global _oldTemperature
+        global _oldHumidity
         (temperature, humidity)   = measure()
         if temperature is not None and plausibilityTest(_oldTemperature, temperature) == True:
             temperatureList.extend([temperature])
@@ -67,6 +86,11 @@ def averageMinute():
 
     return (temperature, humidity)
 
+'''
+Checked if the Value ist plausibility. They have to be a tolerance of 20%
+
+return boolean
+'''
 def plausibilityTest(valueOld, valueNew):
     compareValueMin = valueOld - valueOld * 0.2
     compareValueMax = valueOld + valueOld * 0.2
@@ -77,6 +101,13 @@ def plausibilityTest(valueOld, valueNew):
 
     return(plausibility)
 
+'''
+Connect to the database and if not exists create the table
+
+return conn
+
+require conn != NULL
+'''
 def connectToDataBase():
 
     conn = sqlite3.connect("temp.db")
@@ -84,7 +115,7 @@ def connectToDataBase():
 
     # Create table
     sql = '''CREATE TABLE IF NOT EXISTS temperature
-                 (temp REAL, hum REAL datetime DATETIME)'''
+                 (temp REAL, hum REAL, datetime DATETIME)'''
     cursor.execute(sql)
 
     # Save (commit) the changes
@@ -92,6 +123,14 @@ def connectToDataBase():
 
     return (conn)
 
+'''
+Write values in the database.
+
+:parameter 
+conn        != NULL
+temperature != NULL
+humidity    != NULL
+'''
 def writeDataIntoDataBase(conn ,temperature, humidity):
 
     cursor = conn.cursor()
@@ -131,8 +170,7 @@ try:
         writeDataIntoDataBase(conn, temperature, humidity)
 
         # Save into CSV-Files
-        File = '/home/cris/Dokumente/' + Date + '.csv'
-        # In die CSV-Dateien schreiben
+        File = '/home/cris/Documents/' + Date + '.csv'
         with open(File,'a') as out:
             file    = csv.writer(out, delimiter=';', lineterminator='\n')
             file.writerow([temperature,humidity,Hour,Minute,Day,Mounth,Year])
