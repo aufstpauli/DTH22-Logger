@@ -33,7 +33,8 @@ https://creativecommons.org/licenses/?lang=de
 '''
 
 import csv
-from datetime import datetime, date, time
+from datetime import datetime
+import time
 import Adafruit_DHT
 import sqlite3
 
