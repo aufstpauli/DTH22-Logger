@@ -33,7 +33,7 @@ https://creativecommons.org/licenses/?lang=de
 '''
 
 import csv
-import time
+from datetime import datetime, date, time
 import Adafruit_DHT
 import sqlite3
 
@@ -94,12 +94,7 @@ return boolean
 def plausibilityTest(valueOld, valueNew):
     compareValueMin = valueOld - valueOld * 0.2
     compareValueMax = valueOld + valueOld * 0.2
-    if valueNew < compareValueMax and valueNew > compareValueMin:
-        plausibility = True
-    else:
-        plausibility = False
-
-    return(plausibility)
+    return(compareValueMin < valueNew < compareValueMax)
 
 '''
 Connect to the database and if not exists create the table
@@ -134,12 +129,12 @@ humidity    != NULL
 def writeDataIntoDataBase(conn ,temperature, humidity):
 
     cursor = conn.cursor()
-    dateTime = time.strftime("YYYY-MM-DD HH:MM:SS.SSS")
+    DATETIME = datetime.now()
 
     format_str = """INSERT INTO temperature (temp, hum, datetime) 
     VALUES ("{t}", "{h}", "{dt}");"""
 
-    sql = format_str.format(t=temperature, h=humidity, dt=dateTime)
+    sql = format_str.format(t=temperature, h=humidity, dt=DATETIME)
     cursor.execute(sql)
 
     # Save (commit) the changes
