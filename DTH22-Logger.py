@@ -42,8 +42,22 @@ import sqlite3
 _am2302 = Adafruit_DHT.AM2302
 pin = 4     # Pin on RsPi
 
-# For checking plausibility
-(_oldHumidity, _oldTemperature) = Adafruit_DHT.read_retry(_am2302, pin)
+
+# initlize
+hum             = 0.0
+temp            = 0.0
+_oldHumidity    = 0.0
+_oldTemperature = 0.0
+print("initlize....")
+for x in range(5):
+    (hum, temp) = Adafruit_DHT.read_retry(_am2302, pin)
+    _oldHumidity    += hum
+    _oldTemperature += temp
+    sleep(5)
+_oldHumidity    = _oldHumidity / 5
+_oldTemperature = _oldTemperature / 5
+print("initlize....done")
+
 
 '''
 For easy handling to measure
@@ -80,11 +94,16 @@ def averageMinute():
         if humidity is not None and plausibilityTest(_oldHumidity, humidity) == True:
             humidityList.extend([humidity])
             _oldHumidity = humidity
+        print(str(temperature) + "°C\t\t\t" + str(humidity) + "%")
         time.sleep(5)
-        minNew                      = time.strftime("%M")
-    temperature                     = sum(temperatureList)/len(temperatureList)
-    humidity                        = sum(humidityList)/len(humidityList)
-    print(str(temperature)+"°C\t\t"+str(humidity)+"%")
+        minNew = time.strftime("%M")
+
+    try:
+        temperature     = sum(temperatureList)/len(temperatureList)
+        humidity        = sum(humidityList)/len(humidityList)
+    except ZeroDivisionError:
+        temperature = _oldTemperature
+        humidity    = _oldHumidity
 
     return (temperature, humidity)
 
@@ -174,7 +193,7 @@ try:
             file    = csv.writer(out, delimiter=';', lineterminator='\n')
             file.writerow([temperature,humidity,Hour,Minute,Day,Mounth,Year])
         out.close()
-        print("Save into CSV-Files in: /home/cris/Documents/")
+        print("Save into CSV-Files in: /home/cris/Documents/"+str(Date)+'.csv')
 
 # Do by Error or by clothing Script
 finally:
